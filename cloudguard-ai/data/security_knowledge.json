@@ -1,0 +1,114 @@
+{
+  "PUBLIC_SENSITIVE_RESOURCE": {
+    "title": "Sensitive resource permits public access",
+    "category": "Exposure",
+    "why_it_matters": "The resource is marked sensitive and its configuration explicitly allows public access.",
+    "potential_impact": "Anyone who can reach the resource endpoint may be able to read sensitive data, depending on the real provider's enforcement.",
+    "recommended_action": "Confirm whether public access is intended. If not, disable public access and re-verify with a fresh scan.",
+    "limitations": ["Synthetic schema; real provider enforcement is not modelled."]
+  },
+  "UNKNOWN_PUBLIC_ACCESS_SENSITIVE": {
+    "title": "Public access state unknown for sensitive resource",
+    "category": "Evidence Gap",
+    "why_it_matters": "The public_access field is missing for a sensitive resource, so exposure cannot be assessed.",
+    "potential_impact": "The resource may or may not be exposed. The missing field is not evidence of safety.",
+    "recommended_action": "Supply the public_access value from the authoritative configuration and rescan.",
+    "limitations": ["Absence of a field is recorded as UNKNOWN, never as SAFE."]
+  },
+  "PUBLIC_NON_SENSITIVE_RESOURCE": {
+    "title": "Non-sensitive resource permits public access",
+    "category": "Exposure",
+    "why_it_matters": "A publicly accessible resource increases the surface area of the environment even when it is not marked sensitive.",
+    "potential_impact": "Data stored in or served by this resource may be reachable without authentication.",
+    "recommended_action": "Confirm the resource is meant to be public and that it holds no sensitive data.",
+    "limitations": ["Sensitivity classification comes from the input, not from content inspection."]
+  },
+  "IAM_EXCESS_PRIVILEGE": {
+    "title": "Identity is granted actions beyond its declared requirements",
+    "category": "Privilege",
+    "why_it_matters": "Granted actions outside the declared required-action list increase what the identity could do if it were misused.",
+    "potential_impact": "Excess permissions can widen the effect of a compromised credential or a coding mistake.",
+    "recommended_action": "Compare the granted actions with real usage and narrow the policy to declared requirements.",
+    "limitations": ["The declared required-action list may be incomplete.", "Full IAM policy evaluation is not performed."]
+  },
+  "IAM_WILDCARD_SCOPE": {
+    "title": "Identity holds wildcard action or resource scope",
+    "category": "Privilege",
+    "why_it_matters": "A wildcard action or resource grants an open-ended scope that is hard to audit.",
+    "potential_impact": "Wildcard grants can reach resources and actions that were never intended.",
+    "recommended_action": "Replace wildcards with explicitly required actions and documented resources.",
+    "limitations": ["Explicit Deny statements are matched only on exact action strings in this prototype."]
+  },
+  "IAM_CONDITIONAL_BROAD_SCOPE": {
+    "title": "Broad scope limited by a declared condition",
+    "category": "Privilege",
+    "why_it_matters": "A broad statement is present, but a condition narrows when it applies.",
+    "potential_impact": "The effective reach depends on the condition being evaluated correctly by the provider.",
+    "recommended_action": "Verify the condition is enforced as intended and consider narrowing the resource scope.",
+    "limitations": ["Conditions are recorded as evidence but are not evaluated against live request context."]
+  },
+  "IAM_REQUIREMENTS_UNDECLARED": {
+    "title": "Required actions not declared for identity",
+    "category": "Evidence Gap",
+    "why_it_matters": "Without declared requirements, excess privilege cannot be assessed.",
+    "potential_impact": "Excess permissions may exist without being detected.",
+    "recommended_action": "Declare the required_actions list for this identity and rescan.",
+    "limitations": ["Remediation requires declared requirements; none are generated without them."]
+  },
+  "EXPOSED_PATH_TO_SENSITIVE": {
+    "title": "Verified configuration path from exposed entry point to sensitive resource",
+    "category": "Attack Path",
+    "why_it_matters": "Every edge on the path is supplied and validated in the input, so the configuration connects an exposed entry point to a sensitive resource.",
+    "potential_impact": "This is a verified configuration path, not proof of exploitability. Reaching the resource would still require an attacker to use the identity.",
+    "recommended_action": "Review whether the identity needs access to the sensitive resource and whether the entry point should use it.",
+    "limitations": ["Configuration paths are not exploitability proofs.", "Runtime controls outside the input are not modelled."]
+  },
+  "POSSIBLE_RELATIONSHIP_UNVERIFIED": {
+    "title": "Possible identity-to-sensitive-resource relationship without validated evidence",
+    "category": "Relationship",
+    "why_it_matters": "A relationship exists in the input but is not validated, so the access path cannot be confirmed.",
+    "potential_impact": "If the relationship is real, the identity may reach a sensitive resource. Evidence is missing.",
+    "recommended_action": "Validate the policy trace for this relationship before relying on it.",
+    "limitations": ["Unvalidated relationships are not used in verified paths."]
+  },
+  "AUDIT_PUBLIC_ACCESS_CHANGE": {
+    "title": "Audit event enabled or changed public access",
+    "category": "Audit Indicator",
+    "why_it_matters": "A successful change that adds public access is a suspicious indicator that should be reviewed.",
+    "potential_impact": "If unauthorised, the change may have exposed data. It may also be an approved change.",
+    "recommended_action": "Confirm the change was approved with the actor and change record.",
+    "limitations": ["A policy-change event is an indicator, not proof of compromise."]
+  },
+  "AUDIT_PERMISSION_CHANGE": {
+    "title": "Audit event modified an identity's permissions",
+    "category": "Audit Indicator",
+    "why_it_matters": "A successful permission change can widen access and deserves review.",
+    "potential_impact": "Unexpected permission changes can precede misuse of an identity.",
+    "recommended_action": "Confirm the change against the approved change record and compare current permissions.",
+    "limitations": ["A policy-change event is an indicator, not proof of compromise."]
+  },
+  "AUDIT_DENIED_REQUEST": {
+    "title": "Denied request recorded",
+    "category": "Audit Indicator",
+    "why_it_matters": "A denied request was blocked. It is not a successful access event.",
+    "potential_impact": "Repeated denied requests may indicate probing. A single denial is usually normal.",
+    "recommended_action": "Review only if denials repeat or target sensitive resources.",
+    "limitations": ["A single unfamiliar source IP is not proof of malicious activity."]
+  },
+  "AUDIT_MISSING_CONTEXT": {
+    "title": "Audit event missing actor, resource, or timestamp",
+    "category": "Evidence Gap",
+    "why_it_matters": "Events without context cannot be fully attributed or ordered.",
+    "potential_impact": "Activity may be unattributed, which limits investigation.",
+    "recommended_action": "Improve audit logging so events carry actor, resource, and timestamp.",
+    "limitations": ["Confidence for this event is reduced."]
+  },
+  "AUDIT_UNDECLARED_ACTOR_SENSITIVE": {
+    "title": "Successful access to sensitive resource by undeclared actor",
+    "category": "Audit Indicator",
+    "why_it_matters": "The actor does not appear in the declared identities but succeeded in reading a sensitive resource.",
+    "potential_impact": "Access may be legitimate but undocumented, or it may indicate an unmanaged credential.",
+    "recommended_action": "Identify the actor and confirm it is authorised.",
+    "limitations": ["The configuration may be incomplete, so an undeclared actor is not proof of misuse."]
+  }
+}

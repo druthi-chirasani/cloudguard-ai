@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "synthetic": true,
+  "events": [
+    {
+      "id": "evt-0001",
+      "timestamp": "2026-10-10T09:14:02Z",
+      "actor": "admin-ops-user",
+      "action": "PutBucketPolicy",
+      "resource": "bucket-customer-data",
+      "outcome": "success",
+      "source_ip": "198.51.100.10",
+      "details": {"change": "public read access added to policy"}
+    },
+    {
+      "id": "evt-0002",
+      "timestamp": "2026-10-10T09:20:44Z",
+      "actor": "deploy-role",
+      "action": "AttachRolePolicy",
+      "resource": "app-service-role",
+      "outcome": "success",
+      "source_ip": "10.20.0.8",
+      "details": {"policy": "broad wildcard policy attached"}
+    },
+    {
+      "id": "evt-0003",
+      "timestamp": "2026-10-10T10:02:11Z",
+      "actor": "anonymous-client",
+      "action": "GetObject",
+      "resource": "bucket-customer-data",
+      "outcome": "denied",
+      "source_ip": "203.0.113.77",
+      "details": {}
+    },
+    {
+      "id": "evt-0004",
+      "timestamp": "2026-10-10T10:05:30Z",
+      "actor": "app-service-role",
+      "action": "GetObject",
+      "resource": "bucket-customer-data",
+      "outcome": "success",
+      "source_ip": "10.20.0.15",
+      "details": {}
+    },
+    {
+      "id": "evt-0005",
+      "actor": null,
+      "action": "GetObject",
+      "resource": "bucket-partner-reports",
+      "outcome": "success",
+      "source_ip": "10.20.0.22",
+      "details": {}
+    },
+    {
+      "id": "evt-0006",
+      "timestamp": "2026-10-10T11:00:00Z",
+      "actor": "analytics-role",
+      "action": "ListBucket",
+      "resource": "bucket-internal-logs",
+      "outcome": "denied",
+      "source_ip": "10.20.0.31",
+      "details": {}
+    }
+  ]
+}

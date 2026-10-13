@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0",
+  "dataset_name": "CloudGuard Synthetic Demo",
+  "synthetic": true,
+  "resources": [
+    {
+      "id": "bucket-customer-data",
+      "type": "storage",
+      "name": "Customer Data Bucket",
+      "sensitive": true,
+      "public_access": true,
+      "encryption": "AES256",
+      "metadata": {"description": "Synthetic sensitive-data example (public read enabled)"}
+    },
+    {
+      "id": "bucket-internal-logs",
+      "type": "storage",
+      "name": "Internal Logs Bucket",
+      "sensitive": true,
+      "public_access": false,
+      "encryption": "AES256",
+      "metadata": {"description": "Synthetic correctly restricted storage"}
+    },
+    {
+      "id": "bucket-partner-reports",
+      "type": "storage",
+      "name": "Partner Reports Bucket",
+      "sensitive": true,
+      "encryption": "AES256",
+      "metadata": {"description": "Synthetic example with public_access field missing (UNKNOWN)"}
+    }
+  ],
+  "identities": [
+    {
+      "id": "app-service-role",
+      "type": "service",
+      "name": "Application Service Role",
+      "permissions": [
+        {
+          "effect": "Allow",
+          "actions": ["GetObject", "PutObject", "DeleteObject", "ListBucket"],
+          "resources": ["bucket-customer-data"],
+          "conditions": {}
+        }
+      ],
+      "required_actions": ["GetObject"]
+    },
+    {
+      "id": "analytics-role",
+      "type": "role",
+      "name": "Analytics Reporting Role",
+      "permissions": [
+        {
+          "effect": "Allow",
+          "actions": ["GetObject", "ListBucket"],
+          "resources": ["*"],
+          "conditions": {"IpAddress": {"source_ip": "10.0.0.0/8"}}
+        }
+      ],
+      "required_actions": ["GetObject"]
+    },
+    {
+      "id": "deploy-role",
+      "type": "role",
+      "name": "Deployment Pipeline Role",
+      "permissions": [
+        {
+          "effect": "Allow",
+          "actions": ["*"],
+          "resources": ["*"],
+          "conditions": {}
+        },
+        {
+          "effect": "Deny",
+          "actions": ["DeleteBucket"],
+          "resources": ["*"],
+          "conditions": {}
+        }
+      ],
+      "required_actions": ["PutObject"]
+    }
+  ],
+  "relationships": [
+    {
+      "source": "app-service-role",
+      "target": "bucket-customer-data",
+      "type": "has_access",
+      "evidence": "Synthetic verified policy relationship",
+      "validated": true
+    },
+    {
+      "source": "analytics-role",
+      "target": "bucket-internal-logs",
+      "type": "has_access",
+      "evidence": "Wildcard resource scope; relationship not yet confirmed",
+      "validated": false
+    },
+    {
+      "source": "deploy-role",
+      "target": "bucket-customer-data",
+      "type": "has_access",
+      "evidence": "Wildcard scope; no validated policy trace",
+      "validated": false
+    }
+  ],
+  "entry_points": [
+    {
+      "id": "public-web-app",
+      "type": "application",
+      "name": "Public Web Application",
+      "publicly_exposed": true,
+      "uses_identity": "app-service-role"
+    },
+    {
+      "id": "internal-batch-job",
+      "type": "job",
+      "name": "Internal Batch Job",
+      "publicly_exposed": false,
+      "uses_identity": "analytics-role"
+    }
+  ]
+}
